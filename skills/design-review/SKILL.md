@@ -23,12 +23,12 @@ Also identify which components are on screen (see `components/INDEX.md` descript
 ## 2. Capture the interface
 
 Use whatever is available, in this order:
-1. **Browser tool** (Claude in Chrome, built-in browser, Playwright MCP): open the page, take a screenshot, then run `scripts/measure_styles.js` with the tool's JavaScript execution. To scope to a region, first run `window.__DR_ROOT = '<css selector>'`.
-2. **Shell + Playwright** (Claude Code): `python3 scripts/capture.py <url|file> [--selector ".card"] [--out dir]` → screenshot, grayscale screenshot, `measurements.json`.
+1. **Browser tool** (Claude in Chrome, built-in browser, Playwright MCP): open the page, take a screenshot, then run `scripts/measure_styles.js` with the tool's JavaScript execution. To scope to a region, first run `window.__DR_ROOT = '<css selector>'`. Save the screenshot as `design-review-out/screenshot.png` if you can write files.
+2. **Shell** (Claude Code, Codex…): `npx -y design-review-skill@latest capture <url|file> [--selector ".card"] [--mobile] [--out design-review-out]` → `screenshot.png`, `screenshot-gray.png`, `measurements.json` (+ `screenshot-mobile.png`). It uses the installed Chrome/Edge; if it reports that no browser was found, ask the user before running `npx playwright install chromium`.
 3. **Screenshot only**: visual checks only; say measurements were unavailable.
 4. **Code only**: read the CSS/markup and compute the same signals by hand.
 
-Always do the **grayscale test** (PRO-03): view a desaturated version (capture.py makes one; in a browser tool apply `document.documentElement.style.filter='grayscale(1)'`, screenshot, then remove it).
+Always do the **grayscale test** (PRO-03): view a desaturated version (`capture` makes one; in a browser tool apply `document.documentElement.style.filter='grayscale(1)'`, screenshot, then remove it).
 
 ## 3. Analyze
 
@@ -43,13 +43,29 @@ Always do the **grayscale test** (PRO-03): view a desaturated version (capture.p
 **A. Findings** — ranked by impact, max ~10, each as:
 `[ID] Problem — evidence (measured value or what's visible) → fix (concrete values from the book's scales)`
 
-**B. Corrected design** — unless the user only wants the critique:
-- Rebuild the screen/component as a self-contained HTML/CSS page applying the fixes, using the scales from the principle files (spacing 4/8/12/16/24/32/48/64…, type 12/14/16/18/20/24/30/36/48…, 5-level shadows, 100–900 color shades). Show before (screenshot) and after side by side when possible.
-- Or, if the user wants code changes, give a CSS/markup patch.
+Also write them to `design-review-out/findings.json` so the compare page can show them:
+```json
+{ "summary": "One sentence on the overall problem.",
+  "findings": [ { "id": "HIE-03", "impact": "high", "title": "…", "problem": "…", "evidence": "…", "fix": "…" } ] }
+```
+`impact` is `high`, `medium` or `low`.
 
-**C. System summary** (redesigns) — the type scale, spacing scale, palette (greys + primary + accents in HSL) and shadows used, so the team can adopt them.
+**B. Proposal + live comparison** — always, unless the user only wants the critique:
+1. Write `design-review-out/proposal.html`: the same screen/component rebuilt as one self-contained HTML/CSS page applying the fixes, with the scales from the principle files (spacing 4/8/12/16/24/32/48/64…, type 12/14/16/18/20/24/30/36/48…, 5-level shadows, 100–900 color shades). Keep the real content and the brand unless asked otherwise.
+2. Open the comparison:
+   - **Shell**: start `npx -y design-review-skill@latest compare --out design-review-out` **in the background** (it keeps running). It opens the browser with before/after side by side, the findings list, desktop/tablet/mobile and grayscale toggles. Give the user the URL it prints.
+   - **Browser tool only**: open `proposal.html` in a new tab next to the original page.
+
+**C. Refine with the user** — after showing the comparison, ask what to change (spacing, color, emphasis, layout, copy…). Edit `proposal.html` (and `findings.json` when the reasoning changes) in place; the compare page reloads by itself. Tie every change to a principle ID when one applies. Repeat until the user approves the proposal.
+
+**D. Apply to code** — only when the user asks: port the approved proposal to their codebase as CSS/markup changes, then capture again to confirm the measured problems are gone.
+
+**E. System summary** (redesigns) — the type scale, spacing scale, palette (greys + primary + accents in HSL) and shadows used, so the team can adopt them.
+
+Stop the compare server (kill the background process) when the session's design work is done.
 
 ## Rules
+- Reply in the language the user wrote in.
 - Cite IDs; never invent principles beyond the references. If something isn't covered, say it's outside the book.
 - Prefer few, high-impact changes over long lists.
 - Don't copy the book's text; the references are paraphrased summaries.

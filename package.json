@@ -1,0 +1,37 @@
+{
+  "name": "design-review-skill",
+  "version": "0.1.0",
+  "description": "Capture and compare CLI for the design-review agent skill: screenshots, style measurements and a live before/after proposal page.",
+  "type": "module",
+  "bin": {
+    "design-review-skill": "bin/cli.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "skills/design-review/scripts/measure_styles.js"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "dependencies": {
+    "playwright-core": "^1.64.1"
+  },
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "design-review",
+    "playwright",
+    "ui-design"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabrielciprianoo/design-review-skill.git"
+  },
+  "homepage": "https://github.com/gabrielciprianoo/design-review-skill#readme",
+  "bugs": "https://github.com/gabrielciprianoo/design-review-skill/issues",
+  "license": "MIT"
+}

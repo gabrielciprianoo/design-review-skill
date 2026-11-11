@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design review</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='7' height='16' rx='2' fill='%238a93a2'/%3E%3Crect x='9' width='7' height='16' rx='2' fill='%233b5bdb'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --canvas: #eceef2;
+    --border: #e2e5ea;
+    --text: #1d2330;
+    --muted: #5d6675;
+    --faint: #8a93a2;
+    --accent: #3b5bdb;
+    --accent-soft: #e7ecff;
+    --high: #c92a2a;
+    --high-soft: #ffe8e8;
+    --medium: #b35c00;
+    --medium-soft: #fff1db;
+    --low: #2b7a4b;
+    --low-soft: #e3f6ea;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111318;
+      --surface: #181b22;
+      --canvas: #0c0e12;
+      --border: #2a2f3a;
+      --text: #e8eaef;
+      --muted: #a3abb9;
+      --faint: #6f7888;
+      --accent: #8aa2ff;
+      --accent-soft: #232b4a;
+      --high: #ff8787;
+      --high-soft: #3a1f22;
+      --medium: #ffb454;
+      --medium-soft: #3a2b16;
+      --low: #69db9b;
+      --low-soft: #17322a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-right: auto; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
+  .status.live .dot { background: var(--low); box-shadow: 0 0 0 3px var(--low-soft); }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .seg { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--canvas); border: 1px solid var(--border); }
+  .seg button, .toggle {
+    font: inherit; font-size: 13px; font-weight: 500; color: var(--muted);
+    border: 0; background: transparent; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+  .toggle { border: 1px solid var(--border); background: var(--surface); }
+  .toggle[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  main { display: grid; grid-template-columns: 1fr 360px; min-height: 0; }
+  main.no-findings { grid-template-columns: 1fr; }
+  main.no-findings aside { display: none; }
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); min-height: 0; }
+  .panes[data-view="before"] { grid-template-columns: 1fr; }
+  .panes[data-view="before"] .pane-after, .panes[data-view="after"] .pane-before { display: none; }
+  .panes[data-view="after"] { grid-template-columns: 1fr; }
+  .pane { display: grid; grid-template-rows: auto 1fr; min-height: 0; min-width: 0; background: var(--canvas); }
+  .pane-label {
+    display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .pane-label small { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--faint); }
+  .pane-body { overflow: auto; padding: 24px; }
+  .frame { margin: 0 auto; background: #fff; box-shadow: var(--shadow); border-radius: 4px; overflow: hidden; }
+  .frame img { display: block; width: 100%; height: auto; }
+  .frame.gray { filter: grayscale(1); }
+  .after-frame { transform-origin: top left; }
+  .after-frame iframe { display: block; border: 0; background: #fff; }
+  .empty { color: var(--faint); text-align: center; padding: 48px 16px; }
+
+  aside { background: var(--surface); border-left: 1px solid var(--border); overflow: auto; padding: 20px 16px 32px; }
+  aside h2 { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+  .summary { color: var(--muted); margin: 0 0 16px; }
+  .finding { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .finding-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .id { font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--accent); }
+  .impact { margin-left: auto; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; }
+  .impact-high { color: var(--high); background: var(--high-soft); }
+  .impact-medium { color: var(--medium); background: var(--medium-soft); }
+  .impact-low { color: var(--low); background: var(--low-soft); }
+  .finding h3 { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+  .finding p { margin: 0 0 6px; }
+  .evidence { color: var(--muted); font-size: 13px; }
+  .fix { font-size: 13px; }
+  .fix::before { content: "→ "; color: var(--accent); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; grid-template-rows: minmax(60vh, 1fr) auto; }
+    .panes { grid-template-columns: 1fr; }
+    aside { border-left: 0; border-top: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    Design review
+    <span class="status" id="status"><span class="dot"></span><span id="status-text">Connecting…</span></span>
+  </div>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="View" id="view">
+      <button data-value="split" aria-pressed="true">Side by side</button>
+      <button data-value="before" aria-pressed="false">Before</button>
+      <button data-value="after" aria-pressed="false">After</button>
+    </div>
+    <div class="seg" role="group" aria-label="Proposal viewport" id="viewport">
+      <button data-value="1280" aria-pressed="true">Desktop</button>
+      <button data-value="768" aria-pressed="false">Tablet</button>
+      <button data-value="390" aria-pressed="false">Mobile</button>
+    </div>
+    <button class="toggle" id="gray" aria-pressed="false" title="Grayscale test (PRO-03)">Grayscale</button>
+    <button class="toggle" id="sync" aria-pressed="true">Sync scroll</button>
+    <button class="toggle" id="findings-toggle" aria-pressed="true">Findings <span id="count"></span></button>
+  </div>
+</header>
+<main id="main">
+  <div class="panes" id="panes" data-view="split">
+    <section class="pane pane-before">
+      <div class="pane-label">Before <small>current screenshot (mobile when captured with --mobile)</small></div>
+      <div class="pane-body" id="before-body">
+        <div class="frame" id="before-frame"><img id="before-img" alt="Current design"></div>
+        <div class="empty" id="before-empty" hidden>No before screenshot yet.</div>
+      </div>
+    </section>
+    <section class="pane pane-after">
+      <div class="pane-label">After <small id="after-label"></small></div>
+      <div class="pane-body" id="after-body">
+        <div id="after-wrap" style="margin: 0 auto">
+          <div class="frame after-frame" id="after-frame"><iframe id="after" title="Proposed design"></iframe></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <aside id="findings" aria-label="Findings">
+    <h2>Findings</h2>
+    <div id="findings-list"><p class="empty">No findings file yet.</p></div>
+  </aside>
+</main>
+<script>
+(() => {
+  const AFTER_SRC = '/after/__AFTER_NAME__';
+  const $ = (id) => document.getElementById(id);
+  const state = { vw: 1280, gray: false, sync: true };
+  let pendingScroll = 0;
+  const iframe = $('after');
+  const afterFrame = $('after-frame');
+  const afterWrap = $('after-wrap');
+  const afterBody = $('after-body');
+  const beforeBody = $('before-body');
+  $('after-label').textContent = decodeURIComponent(AFTER_SRC.split('/').pop());
+
+  // Segmented controls
+  const seg = (id, onChange) => {
+    $(id).addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b === btn));
+      onChange(btn.dataset.value);
+    });
+  };
+  const toggle = (id, onChange) => {
+    $(id).addEventListener('click', () => {
+      const on = $(id).getAttribute('aria-pressed') !== 'true';
+      $(id).setAttribute('aria-pressed', String(on));
+      onChange(on);
+    });
+  };
+  seg('view', (v) => { $('panes').dataset.view = v; layout(); });
+  seg('viewport', (v) => { state.vw = Number(v); layout(); loadBefore(); });
+  toggle('gray', (on) => { state.gray = on; for (const f of document.querySelectorAll('.frame')) f.classList.toggle('gray', on); });
+  toggle('sync', (on) => { state.sync = on; });
+  toggle('findings-toggle', (on) => { $('main').classList.toggle('no-findings', !on); layout(); });
+
+  // Scale the proposal iframe to the pane width while keeping its real viewport width.
+  function layout() {
+    const avail = afterBody.clientWidth - 48;
+    const scale = Math.min(1, avail / state.vw);
+    let h = 800;
+    try { h = Math.max(iframe.contentDocument.documentElement.scrollHeight, 200); } catch {}
+    iframe.style.width = state.vw + 'px';
+    iframe.style.height = h + 'px';
+    afterFrame.style.width = state.vw + 'px';
+    afterFrame.style.transform = `scale(${scale})`;
+    afterWrap.style.width = state.vw * scale + 'px';
+    afterWrap.style.height = h * scale + 'px';
+  }
+  new ResizeObserver(layout).observe(afterBody);
+  let bodyObserver;
+  iframe.addEventListener('load', () => {
+    try {
+      bodyObserver?.disconnect();
+      bodyObserver = new ResizeObserver(layout);
+      bodyObserver.observe(iframe.contentDocument.documentElement);
+    } catch {}
+    layout();
+    afterBody.scrollTop = pendingScroll;
+  });
+
+  // Proportional scroll sync between panes.
+  let syncing = false;
+  const syncFrom = (src, dst) => src.addEventListener('scroll', () => {
+    if (!state.sync || syncing) return;
+    syncing = true;
+    const ratio = src.scrollTop / Math.max(1, src.scrollHeight - src.clientHeight);
+    dst.scrollTop = ratio * (dst.scrollHeight - dst.clientHeight);
+    requestAnimationFrame(() => { syncing = false; });
+  });
+  syncFrom(beforeBody, afterBody);
+  syncFrom(afterBody, beforeBody);
+
+  // Loaders
+  function loadAfter() {
+    pendingScroll = afterBody.scrollTop;
+    iframe.src = AFTER_SRC + '?t=' + Date.now();
+  }
+  function loadBefore() {
+    const img = $('before-img');
+    img.onload = () => { $('before-frame').hidden = false; $('before-empty').hidden = true; $('before-frame').style.maxWidth = img.naturalWidth + 'px'; };
+    const desktop = '/before.png?t=' + Date.now();
+    img.onerror = () => {
+      if (!img.src.includes('/before.png')) { img.src = desktop; return; }
+      $('before-frame').hidden = true; $('before-empty').hidden = false;
+    };
+    img.src = state.vw <= 390 ? '/before-mobile.png?t=' + Date.now() : desktop;
+  }
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+  async function loadFindings() {
+    const list = $('findings-list');
+    let data;
+    try {
+      const res = await fetch('/findings.json?t=' + Date.now());
+      if (!res.ok) throw new Error('missing');
+      data = await res.json();
+    } catch (err) {
+      list.replaceChildren(el('p', 'empty', err.message === 'missing' ? 'No findings file yet.' : 'findings.json is not valid JSON.'));
+      $('count').textContent = '';
+      return;
+    }
+    const items = Array.isArray(data) ? data : data.findings || [];
+    const nodes = [];
+    if (data.summary) nodes.push(el('p', 'summary', data.summary));
+    for (const f of items) {
+      const card = el('article', 'finding');
+      const head = el('div', 'finding-head');
+      if (f.id) head.append(el('span', 'id', f.id));
+      if (f.impact) head.append(el('span', 'impact impact-' + String(f.impact).toLowerCase(), f.impact));
+      card.append(head);
+      if (f.title) card.append(el('h3', '', f.title));
+      if (f.problem) card.append(el('p', '', f.problem));
+      if (f.evidence) card.append(el('p', 'evidence', f.evidence));
+      if (f.fix) card.append(el('p', 'fix', f.fix));
+      nodes.push(card);
+    }
+    if (!items.length) nodes.push(el('p', 'empty', 'No findings.'));
+    list.replaceChildren(...nodes);
+    $('count').textContent = items.length ? `(${items.length})` : '';
+  }
+
+  // Live reload
+  const es = new EventSource('/events');
+  es.onopen = () => { $('status').classList.add('live'); $('status-text').textContent = 'Live'; };
+  es.onerror = () => { $('status').classList.remove('live'); $('status-text').textContent = 'Reconnecting…'; };
+  es.onmessage = (e) => {
+    if (e.data === 'after') loadAfter();
+    else if (e.data === 'findings') loadFindings();
+    else if (e.data === 'before') loadBefore();
+  };
+
+  loadBefore();
+  loadAfter();
+  loadFindings();
+})();
+</script>
+</body>
+</html>
