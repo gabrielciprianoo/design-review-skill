@@ -1,22 +1,49 @@
 # design-review-skill
 
+[![npm](https://img.shields.io/npm/v/design-review-skill)](https://www.npmjs.com/package/design-review-skill)
+
 An agent skill that audits a user interface against a structured catalogue of visual-design principles (hierarchy, spacing, typography, color, depth, images, finishing touches), ranks what is wrong, and proposes a corrected design you can see in the browser.
+
+## Install
+
+### Any agent (skills.sh)
+
+```bash
+npx skills add https://github.com/gabrielciprianoo/design-review-skill --skill design-review
+```
+
+This installs into the current project for the agents it detects. Common variants:
+
+```bash
+npx skills add gabrielciprianoo/design-review-skill --skill design-review -g              # personal, all projects
+npx skills add gabrielciprianoo/design-review-skill --skill design-review -a claude-code  # one agent only
+```
+
+The `skills` CLI needs Node.js 22.20 or later. To update or uninstall:
+
+```bash
+npx skills update design-review
+npx skills remove design-review
+```
+
+### Claude Code plugin
+
+```
+/plugin install design-review --marketplace gabrielciprianoo/design-review-skill
+```
+
+On older Claude Code versions, add the marketplace first:
+
+```
+/plugin marketplace add gabrielciprianoo/design-review-skill
+/plugin install design-review@design-review-skill
+```
 
 ## Quick start
 
-```bash
-npx skills@latest add gabrielciprianoo/design-review-skill
-```
-
-Then ask your agent something like:
+After installing, ask your agent something like:
 
 > Review the design of http://localhost:3000/pricing
-
-To uninstall:
-
-```bash
-npx skills@latest remove gabrielciprianoo/design-review-skill
-```
 
 ## What it does
 
@@ -44,6 +71,7 @@ No Chrome or Edge? Run `npx playwright install chromium` or pass `--chrome /path
 ## Repository layout
 
 ```
+.claude-plugin/               ← Claude Code plugin + marketplace manifests
 skills/design-review/         ← the skill (what skills.sh installs)
 ├── SKILL.md                  ← workflow + routing table
 ├── references/
@@ -82,7 +110,7 @@ node bin/cli.mjs capture examples/sample-bad-page.html --mobile --out /tmp/dr
 node bin/cli.mjs compare --out /tmp/dr
 ```
 
-Work happens through pull requests against `main`. Use [Conventional Commits](https://www.conventionalcommits.org/): release-please turns them into a release PR, and merging that PR tags the release and publishes the CLI to npm (needs the `NPM_TOKEN` repository secret).
+Work happens through pull requests against `main`. Use [Conventional Commits](https://www.conventionalcommits.org/): release-please turns them into a release PR, and merging that PR tags the release, bumps the plugin version, and publishes the CLI to npm through trusted publishing (OIDC, no token secret).
 
 ## Attribution
 

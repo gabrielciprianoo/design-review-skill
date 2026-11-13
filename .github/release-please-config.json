@@ -3,7 +3,14 @@
   "release-type": "node",
   "packages": {
     ".": {
-      "package-name": "design-review-skill"
+      "package-name": "design-review-skill",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   }
 }

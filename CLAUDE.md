@@ -12,6 +12,7 @@ Source for the `design-review` agent skill, distributed through skills.sh (`npx 
 - `skills/design-review/references/principles/*.md` are the source of truth. `references/*/INDEX.md` and `references/components/*.md` are generated: never edit them by hand, run `python3 tools/build_indexes.py skills/design-review`.
 - `bin/` + `src/` are the `design-review-skill` npm CLI the skill calls for `capture` and `compare`. The npm package also ships `skills/design-review/scripts/measure_styles.js`, which `capture` runs in the page; keep it a single expression returning a JSON string.
 - `tools/` and `examples/` are for maintainers only and are not part of the skill.
+- `.claude-plugin/` makes the repo a Claude Code marketplace with one plugin (`design-review`). release-please bumps `plugin.json` `version`; do not edit it by hand.
 - Keep CLI flags backwards compatible: installed skills call `npx design-review-skill@latest`.
 
 ## Conventions
