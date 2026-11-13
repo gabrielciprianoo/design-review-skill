@@ -1,0 +1,18 @@
+{
+  "name": "design-review-skill",
+  "owner": {
+    "name": "gabrielciprianoo",
+    "url": "https://github.com/gabrielciprianoo"
+  },
+  "metadata": {
+    "description": "The design-review agent skill."
+  },
+  "plugins": [
+    {
+      "name": "design-review",
+      "source": "./",
+      "description": "Audit and redesign user interfaces against a catalogue of visual-design principles, with ranked findings and a live before/after proposal page.",
+      "skills": ["./skills/design-review"]
+    }
+  ]
+}

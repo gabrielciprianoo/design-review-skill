@@ -1,0 +1,14 @@
+{
+  "name": "design-review",
+  "description": "Audit and redesign user interfaces against a catalogue of visual-design principles, with ranked findings and a live before/after proposal page.",
+  "version": "0.1.0",
+  "author": {
+    "name": "gabrielciprianoo",
+    "url": "https://github.com/gabrielciprianoo"
+  },
+  "homepage": "https://github.com/gabrielciprianoo/design-review-skill#readme",
+  "repository": "https://github.com/gabrielciprianoo/design-review-skill",
+  "license": "MIT",
+  "keywords": ["design-review", "ui-design", "refactoring-ui", "accessibility"],
+  "skills": ["./skills/design-review"]
+}
