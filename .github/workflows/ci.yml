@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Smoke test capture (uses the runner's Google Chrome)
+        run: |
+          node bin/cli.mjs capture examples/sample-bad-page.html --mobile --out /tmp/dr
+          test -s /tmp/dr/screenshot.png
+          test -s /tmp/dr/screenshot-gray.png
+          test -s /tmp/dr/screenshot-mobile.png
+          node -e "JSON.parse(require('fs').readFileSync('/tmp/dr/measurements.json','utf8'))"
+      - name: Check generated indexes are up to date
+        run: |
+          python3 tools/build_indexes.py skills/design-review
+          git diff --exit-code skills/design-review/references
