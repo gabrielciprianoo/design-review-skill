@@ -1,6 +1,6 @@
 {
   "name": "design-review-skill",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Capture and compare CLI for the design-review agent skill: screenshots, style measurements and a live before/after proposal page.",
   "type": "module",
   "bin": {
